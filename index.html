@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Calculate Dew Point, Relative Humidity and Water Vapor Pressure</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    </head>
+    <style type="text/css">
+        input {
+        -webkit-border-radius: 15px;
+        -moz-border-radius: 15px;
+        border-radius: 15px;
+
+        -webkit-box-shadow: 5px 5px 5px 2px rgba(D, D, D, );
+        -moz-box-shadow: 5px 5px 5px 2px rgba(D, D, D, );
+        box-shadow: 5px 5px 5px 2px rgba(D, D, D, );
+
+        height: 30px;
+        font-size: 20px;
+
+        padding-left: 10px;
+        margin-bottom: 10px;
+        }
+    </style>
+    <body>
+        <h2>Calculate Dew Point, Relative Humidity and Water Vapor Pressure</h2>
+        <div style="font-size: 20px">
+            <table>
+                <tr>
+                    <td style="color: blue;">Wet Bulb Temperature (Celcius):</td><td>
+                    <input id="tw" type="text" value="0.00"/><span id="tberror"></span></td></tr>
+                    <tr><td style="color: blue">Dry Bulb Temperature (Celcius):</td><td><input id="td" type="text" value="0.00"/><span id="tderror"></span></td></tr>
+                    <tr><td style="color: blue">Height (ft.):</td><td><input id="h" type="text" value="0.00"/></td><span id="therror"></span></tr>
+                    <tr><td colspan=2><div style="padding: 10px; color: green" id="output"></div></td></tr>
+                    <tr align="center"><td colspan=2><a href="#" id="calculate">Calculate</a></td></tr>
+                    </table>
+                    </div>
+
+                    <script type="text/javascript">
+                                            function toFloat(text){
+                    value = parseFloat(text);
+                    if(isNaN(value))
+                    {
+                    return -9999;
+                    }
+                    return value;
+                    }
+
+                    $(document).ready(function(){
+                        $("#calculate").click(function(){
+                            var td = toFloat($('#td').val());
+                            var tw = toFloat($('#tw').val());
+                            var h = toFloat($('#h').val());
+                            
+                            if (h == -9999 || tw == -9999 || td == 9999) { return;}
+        
+                            var p = 1013.25 * Math.pow((1.00 - (h/145366.45)),5.2553);
+        
+                            var Es = 6.112 * (Math.exp((17.67 * td) / (243.5 + td)));
+                            var Ew = 6.112 * (Math.exp((17.67 * tw) / (243.5 + tw)));
+        
+                            var E  = Ew - (0.00066 * (1 + 0.00115 * tw) * (td - tw) * p);
+                            var RH = 100 * (E / Es);
+                            var B = Math.log(E / 6.108) / 17.27;
+                            var tp = (237.3 * B) / (1 - B);
+                            var output = "Atmospheric Pressure: " + p.toFixed(2)+ " millbiars<br><br>Dew Point: " + tp.toFixed(2) + " celcius<br>Relative Humidity: " + RH.toFixed(2) + "%<br>Water Vapor Pressure: " + E.toFixed(2) + " millibars<br>";
+                            $("#output").html(output);
+                        });
+                    });
+                    </script>
+                    </body>
+                    </html>

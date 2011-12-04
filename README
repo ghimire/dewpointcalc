@@ -1,0 +1,66 @@
+dewpointcalc - gnokii based Weather Temperature Calculator written in PHP.
+
+Installation
+------------
+Install gnokii with mysql backend. On Debian/Ubuntu, this is done by,
+# apt-get install gnokii-common gnokii-smsd-mysql gnokii
+
+Connect your phone to computer through USB cable. The 'dmesg' command
+displays the device location. In many cases, it's /dev/ttyACM0
+
+Modify /etc/gnokiirc to add the port information, model, baudrate, and
+telephone number. Sample config is shown below.
+
+    [global]
+    port = /dev/ttyACM0
+    model = AT
+    initlength = default
+    connection = serial
+    use_locking = yes
+    serial_baudrate = 19200
+    smsc_timeout = 10
+    [xgnokii]
+    allow_breakage = 0
+    [gnokiid]
+    bindir = /usr/sbin/
+    [connect_script]
+    TELEPHONE = 1234567
+    [disconnect_script]
+    [logging]
+    debug = off
+    rlpdebug = off
+
+Test if it's working,
+$ echo "This is a test message." | gnokii --sendsms 987654321
+
+1) Create mysql database 
+   Example: 
+   > create database 'temperature';
+   > grant all privileges on `temperature`.* to `smsgw-user`@`localhost` identified
+     by 's3cr37passw0rd';
+2) Import temperature.sql file
+   $ mysql -p -u smsgw-user temperature < temperature.sql
+   
+   You may delete temperature.sql after importing it.
+   
+2) Modify include/config.php to match the db details above
+   Example:
+   define("HOST","localhost");
+   define("DB_NAME","temperature");
+   define("DB_USER","sms-user");
+   define("DB_PW","s3cr37passw0rd");
+
+Running the application
+-----------------------
+Start by adding return_temperature_data.php  cron job to run every minute,
+shown as below:
+    * * * * * /usr/bin/php /path/to/return_temperature_data.php 
+
+Assuming, the details above, start gnokii daemon by typing following on the
+terminal:
+$ /usr/sbin/smsd -u sms-user -d temperature -c localhost -m mysql -b IN -f /var/log/temperature.log
+
+The daemon will monitor the temperature database for any incoming text message on the
+phone first line of which is wet bulb temperature, dry bulb temperature and atmospheric
+pressure. Once the calculation is done, the dew point, relative humidity and vapor pressure are
+returned to the sender.
